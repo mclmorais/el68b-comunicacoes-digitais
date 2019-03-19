@@ -8,9 +8,10 @@ Ts=1;
 erroAntipodalDKMF = [];
 erroAntipodalFiltroCasado = [];
 erroOrtogonalDKMF = [];
+erroOrtogonalFiltroCasado = [];
 numeroDeBits = 500;
 
-noiseStep = 0.1;
+noiseStep = 0.5;
 
 for nivelRuido = 1:noiseStep:100
 
@@ -54,12 +55,24 @@ for nivelRuido = 1:noiseStep:100
     ruido=randn(1,fim)*sqrt(nivelRuido); %Potencia do ruido=100
     y=y+ruido;
 
-    resultadoDKMF = BinaryDetector(y, Fs, 0.5);
+    resultadoDKMF = BinaryDetector(y, Fs, 0.7);
     resultadoFiltroCasado = coupleFilterOrtogonal(y, Fs, numeroDeBits);
     erroOrtogonalDKMF = [erroOrtogonalDKMF, CalculateError(arrayInicial, resultadoDKMF)];
     erroOrtogonalFiltroCasado = [erroOrtogonalFiltroCasado, CalculateError(arrayInicial, resultadoFiltroCasado)];
 
     yRx = CreateAnalogueArray(resultadoDKMF, bit0, bit1);
+    
+    %PPM
+    bit0 = [ones(1,Fs/2) zeros(1,Fs/2)];
+    bit1 = [zeros(1,Fs/2) ones(1,Fs/2)];
+    y = CreateAnalogueArray(arrayInicial, bit0, bit1);
+    fim=length(y);
+    ruido=randn(1,fim)*sqrt(nivelRuido); %Potencia do ruido=100
+    y=y+ruido;
+    
+   resultadoFiltroCasado = coupleFilterOrtogonal(y, Fs, numeroDeBits);
+    erroOrtogonalDKMF = [erroOrtogonalDKMF, CalculateError(arrayInicial, resultadoDKMF)]; 
+   
 end
 %concat = [erroAntipodal, erroOrtogonal];
 %maxError = floor(max(concat));
@@ -76,7 +89,6 @@ plot(x, erroAntipodalFiltroCasado)
 ylabel('erro (%)');
 xlabel('ruido (%)');
 axis([0 100 0 50])
-legend("Antipodal", "AntipodalFiltroCasado");
 
 x = 1:noiseStep:100;
 plot(x, erroOrtogonalDKMF)
@@ -88,7 +100,7 @@ plot(x, erroOrtogonalFiltroCasado)
 ylabel('erro (%)');
 xlabel('ruido (%)');
 axis([0 100 0 50])
-legend("Ortogonal", "erroOrtogonalFiltroCasado");
+legend("Antipodal", "AntipodalFiltroCasado", "Ortogonal", "erroOrtogonalFiltroCasado");
 
 hold off
 

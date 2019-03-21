@@ -1,4 +1,4 @@
-function saida_ortogonal = coupleFilterOrtogonal(y, Fs,N)
+function saida_ortogonal = coupleFilterOrtogonal(y, Fs, N)
 
 h0 = [-ones(1,Fs/2) ones(1,Fs/2)];
 h1 = ones(1,Fs);

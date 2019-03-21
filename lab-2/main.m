@@ -37,14 +37,12 @@ axis([0 100 0 50])
 for nivelRuido = 1:noiseStep:100
 
   
-
-
-    ruido=randn(1, length(ondaAntipodal))*sqrt(nivelRuido);
+    ruido = randn(1, length(ondaAntipodal)) * sqrt(nivelRuido);
 
     % Antipodal    
 
     % Soma ruido na onda de bits
-    y=ondaAntipodal+ruido;
+    y = ondaAntipodal + ruido;
 
     resultadoDKMF = BinaryDetector(y, Fs, 0);
     resultadoFiltroCasado = coupleFilterAntipodal(y, Fs, numeroDeBits);

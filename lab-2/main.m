@@ -1,18 +1,19 @@
 %Exemplo Antipodal
 close all
 clc
+clear all
 
 Fs=100;
 Ts=1;
 
-erroAntipodalDKMF = [];
-erroAntipodalFiltroCasado = [];
-erroOrtogonalDKMF = [];
-erroOrtogonalFiltroCasado = [];
-erroOrtogonalPPM = [];
-numeroDeBits = 100;
+noiseStep = 1;
+erroAntipodalDKMF = zeros(1, 100/noiseStep);
+erroAntipodalFiltroCasado = zeros(1, 100/noiseStep);
+erroOrtogonalDKMF = zeros(1, 100/noiseStep);
+erroOrtogonalFiltroCasado = zeros(1, 100/noiseStep);
+erroOrtogonalPPM = zeros(1, 100/noiseStep);
+numeroDeBits = 1000;
 
-noiseStep = 0.5;
 
 % Cria array de bits
 arrayInicial = randi([0 1], numeroDeBits, 1)';
@@ -48,60 +49,45 @@ for nivelRuido = 1:noiseStep:100
     resultadoDKMF = BinaryDetector(y, Fs, 0);
     resultadoFiltroCasado = coupleFilterAntipodal(y, Fs, numeroDeBits);
     
-    erroAntipodalDKMF = [erroAntipodalDKMF, CalculateError(arrayInicial, resultadoDKMF)];
-    erroAntipodalFiltroCasado = [erroAntipodalFiltroCasado, CalculateError(arrayInicial, resultadoFiltroCasado)];
+    erroAntipodalDKMF(nivelRuido/noiseStep) = CalculateError(arrayInicial, resultadoDKMF);
+    erroAntipodalFiltroCasado(nivelRuido/noiseStep) = CalculateError(arrayInicial, resultadoFiltroCasado);
+
 
 
     %Ortogonal
 
     % Soma ruido na onda de bits
-    y=ondaAntipodal+ruido;
+    y = ondaOrtogonal + ruido;
 
     resultadoDKMF = BinaryDetector(y, Fs, 0.7);
     resultadoFiltroCasado = coupleFilterOrtogonal(y, Fs, numeroDeBits);
 
-    erroOrtogonalDKMF = [erroOrtogonalDKMF, CalculateError(arrayInicial, resultadoDKMF)];
-    erroOrtogonalFiltroCasado = [erroOrtogonalFiltroCasado, CalculateError(arrayInicial, resultadoFiltroCasado)];
+    erroOrtogonalDKMF(nivelRuido/noiseStep) = CalculateError(arrayInicial, resultadoDKMF);
+    erroOrtogonalFiltroCasado(nivelRuido/noiseStep) = CalculateError(arrayInicial, resultadoFiltroCasado);
 
-    % yRx = CreateAnalogueArray(resultadoDKMF, bit0, bit1);
+
+    y = ondaPPM + ruido;
     
-    %PPM
-    fim=length(y);
-    ruido=randn(1,fim)*sqrt(nivelRuido); %Potencia do ruido=100
-    y = ondaAntipodal + ruido;
-    
-    resultadoFiltroCasado = coupleFilterOrtogonal(y, Fs, numeroDeBits);
-    erroOrtogonalPPM = [erroOrtogonalPPM, CalculateError(arrayInicial, resultadoFiltroCasado)]; 
-   
-  %  plot(1:nivelRuido, erroAntipodalDKMF)
+    resultadoFiltroCasado = coupleFilterOrtogonalPPM(y, Fs, numeroDeBits);
+    erroOrtogonalPPM(nivelRuido/noiseStep) = CalculateError(arrayInicial, resultadoFiltroCasado);
+
+    plot(1:noiseStep:100, erroAntipodalDKMF);
+    hold on
+    plot(1:noiseStep:100, erroAntipodalFiltroCasado);
+    hold off
+    hold on
+    plot(1:noiseStep:100, erroOrtogonalDKMF);
+    hold off
+    hold on
+    plot(1:noiseStep:100, erroOrtogonalFiltroCasado);
+    hold off
+    hold on
+    plot(1:noiseStep:100, erroOrtogonalPPM);
+    hold off
+    legend("Antipodal DKMF", "Antipodal Filtro Casado", "Ortogonal DKMF", "Ortogonal Filtro Casado","PPM Filtro Casado");
+
+    drawnow;
 
 end
-%concat = [erroAntipodal, erroOrtogonal];
-%maxError = floor(max(concat));
 
-
-% x = 1:noiseStep:100;
-% plot(x, erroAntipodalFiltroCasado)
-% ylabel('erro (%)');
-% xlabel('ruido (%)');
-% axis([0 100 0 50])
-
-% x = 1:noiseStep:100;
-% plot(x, erroOrtogonalDKMF)
-% ylabel('erro (%)');
-% xlabel('ruido (%)');
-% axis([0 100 0 50])
-% x = 1:noiseStep:100;
-% plot(x, erroOrtogonalFiltroCasado)
-% ylabel('erro (%)');
-% xlabel('ruido (%)');
-% axis([0 100 0 50])
-% x = 1:noiseStep:100;
-% plot(x, erroOrtogonalPPM)
-% ylabel('erro (%)');
-% xlabel('ruido (%)');
-% axis([0 100 0 50])
-% legend("Antipodal", "AntipodalFiltroCasado", "Ortogonal", "erroOrtogonalFiltroCasado","erroOrtogonalPPM");
-
-hold off
 

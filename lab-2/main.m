@@ -6,13 +6,13 @@ clear all
 Fs=100;
 Ts=1;
 
-noiseStep = 1;
+noiseStep = 0.5;
 erroAntipodalDKMF = zeros(1, 100/noiseStep);
 erroAntipodalFiltroCasado = zeros(1, 100/noiseStep);
 erroOrtogonalDKMF = zeros(1, 100/noiseStep);
 erroOrtogonalFiltroCasado = zeros(1, 100/noiseStep);
 erroOrtogonalPPM = zeros(1, 100/noiseStep);
-numeroDeBits = 1000;
+numeroDeBits = 10000;
 
 
 % Cria array de bits
@@ -29,7 +29,7 @@ ondaPPM = CreateAnalogueArray(arrayInicial, [ones(1,Fs/2) -ones(1,Fs/2)], [-ones
 t=0:1/Fs:numeroDeBits-1/Fs;
 
 figure
-x = 1:noiseStep:100;
+x = noiseStep:noiseStep:100;
 ylabel('erro (%)');
 xlabel('ruido (%)');
 axis([0 100 0 50])
@@ -69,18 +69,18 @@ for nivelRuido = 1:noiseStep:100
     resultadoFiltroCasado = coupleFilterOrtogonalPPM(y, Fs, numeroDeBits);
     erroOrtogonalPPM(nivelRuido/noiseStep) = CalculateError(arrayInicial, resultadoFiltroCasado);
 
-    plot(1:noiseStep:100, erroAntipodalDKMF);
+    plot(x, erroAntipodalDKMF);
     hold on
-    plot(1:noiseStep:100, erroAntipodalFiltroCasado);
+    plot(x, erroAntipodalFiltroCasado);
     hold off
     hold on
-    plot(1:noiseStep:100, erroOrtogonalDKMF);
+    plot(x, erroOrtogonalDKMF);
     hold off
     hold on
-    plot(1:noiseStep:100, erroOrtogonalFiltroCasado);
+    plot(x, erroOrtogonalFiltroCasado);
     hold off
     hold on
-    plot(1:noiseStep:100, erroOrtogonalPPM);
+    plot(x, erroOrtogonalPPM);
     hold off
     legend("Antipodal DKMF", "Antipodal Filtro Casado", "Ortogonal DKMF", "Ortogonal Filtro Casado","PPM Filtro Casado");
 

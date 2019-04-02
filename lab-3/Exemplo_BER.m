@@ -11,14 +11,15 @@
 %geramos a saída amostrada do filtro casado (y).
 
 close all;
-%clear all;
+clear all;
 
 rand('state', 0);
 randn('state', 0);
 
+%%%%%%%%%%%%% INICIALIZAÇÃO %%%%%%%%%%%%%%%%
 
 % Número de bits a serem simulados.
-bits = 1e6;
+bits = 1e8;
 
 % 2-PAM, dois símbolos possíveis na modulação.
 M = 2;
@@ -32,10 +33,11 @@ N0 = 1;
 % Eb a princípio seria 1, já que as amplitudes são +1 e -1. 
 % Es também seria 1, já que a modulação é binária (1 bit -> 1 símbolo).
 
+%%%%%%%%%%%%% CASO ANTIPODAL %%%%%%%%%%%%%%%%
+
+% Gera onda do ruído.
 % EMF foi suposto como 1, portanto a variância do ruído após o filtro casado é N0/2 apenas.
 n = randn(1, bits) * sqrt(N0/2); 
-
-%%%%%%%%%%%%%CASO ANTIPODAL%%%%%%%%%%%%%%%%
 
 % Transforma os bits em uma onda analógica (ou seja, no sinal)
 s = 2 * b - 1;
@@ -60,6 +62,7 @@ for EbN0dB = x
   % Es calculado a partir de Eb. Como a modulação é binária Es=Eb.
   Es=Eb * log2(M); 
 
+  % Gera a onda de saída do filtro casado.
   % A amplitude dos símbolos transmitidos é alterada de modo que a energia média seja Es, e consequentemente Eb seja aquela desejada.
   y = (sqrt(Es) * s) + n; 
 
@@ -80,9 +83,64 @@ for EbN0dB = x
   PbValues(floor((EbN0dB/EbN0Step) + 1)) = Pb;
 end
 
-%%%%%%%%%%%%%CASO ORTOGONAL%%%%%%%%%%%%%%%%
+antipodalBerValues = berValues;
+antipodalPbValues = PbValues;
 
-semilogy(x, berValues, 'r', x, PbValues, 's');
-grid on;
+%%%%%%%%%%%%% CASO ORTOGONAL %%%%%%%%%%%%%%%%
+
+for EbN0dB = x
+
+  % Gera ondas do ruídos de cada um dos filtros casados usados.
+  % EMF foi suposto como 1, portanto a variância do ruído após o filtro casado é N0/2 apenas.
+  n1 = randn(1, bits) * sqrt(N0/2); 
+  n0 = randn(1, bits) * sqrt(N0/2); 
 
 
+  % Eb/N0 em escala linear.
+  EbN0 = 10^(EbN0dB/10); 
+
+  %Eb requerido para atingir a razão Eb/N0 de interesse.
+  Eb = EbN0 * N0; 
+
+  % Es calculado a partir de Eb. Como a modulação é binária Es=Eb.
+  Es=Eb * log2(M); 
+
+  % Gera a onda de saída do filtro casado.
+
+  % Contém a saída do filtro casado para o símbolo '1' 
+  % (ou seja, idêntica aos bits, pois 1 gera 1 e 0 gera 0)
+  y1 = (sqrt(Es) * b) + n1;
+
+  % Contém a saída do filtro casado para o símbolo '0'
+  % (ou seja, inverso dos bits, pois 1 gera 0 e 0 gera 1)
+  y0 = (sqrt(Es) * ~b) + n0;
+
+  % Decisor.
+  b_est = y1 > y0;
+
+  % Contagem de erros.
+  erros = sum(b ~= b_est); 
+
+  % Cálculo da BER.
+  ber = erros/bits; 
+
+  % BER teórica.
+  Pb = qfunc(sqrt(EbN0));
+
+  
+  berValues(floor((EbN0dB/EbN0Step) + 1)) = ber;
+  PbValues(floor((EbN0dB/EbN0Step) + 1)) = Pb;
+end
+
+ortogonalBerValues = berValues;
+ortogonalPbValues = PbValues;
+
+semilogy(x, antipodalBerValues, 'r', ...
+         x, ortogonalBerValues, 'b', ...
+         x, antipodalPbValues,  'ks', ...
+         x, ortogonalPbValues, 'ks');
+
+legend('Antipodal', 'Ortogonal');
+xlabel('$\frac{E_b}{N_0}$', 'Interpreter', 'latex')
+ylabel('Bit Error Rate (db)')
+grid on

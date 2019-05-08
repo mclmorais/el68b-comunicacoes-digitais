@@ -12,7 +12,7 @@ erroAntipodalFiltroCasado = zeros(1, 100/noiseStep);
 erroOrtogonalDKMF = zeros(1, 100/noiseStep);
 erroOrtogonalFiltroCasado = zeros(1, 100/noiseStep);
 erroOrtogonalPPM = zeros(1, 100/noiseStep);
-numeroDeBits = 10000;
+numeroDeBits = 1000;
 
 
 % Cria array de bits

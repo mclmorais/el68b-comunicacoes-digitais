@@ -19,7 +19,7 @@ randn('state', 0);
 %%%%%%%%%%%%% INICIALIZAÇÃO %%%%%%%%%%%%%%%%
 
 % Número de bits a serem simulados.
-bits = 1e8;
+bits = 1e6;
 
 % 2-PAM, dois símbolos possíveis na modulação.
 M = 2;
